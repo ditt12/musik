@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, ini>
+    <title>Music Search</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: #fff;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+        }
+
+        h1 {
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        input, button {
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        input {
+            width: 70%;
+            background-color: #333;
+            color: white;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .results {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .result-item {
+            background-color: #333;
+            margin: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            width: 200px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .result-item img {
+            width: 100%;
+            border-radius: 5px;
+        }
+
+        .result-item h3 {
+            margin-top: 10px;
+        }
+
+        #audioPlayer {
+            display: none;
+            margin-top: 20px;
+        }
+
+        #audioPlayer audio {
+            width: 100%;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Music Search</h1>
+        <input type="text" id="searchInput" placeholder="Cari musik...">
+        <button id="searchButton">Cari</button>
+
+        <div id="results" class="results"></div>
+
+        <!-- Audio Player -->
+        <div id="audioPlayer">
+            <h3>Now Playing:</h3>
+            <audio id="audio" controls>
+                <source id="audioSource" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('searchButton').addEventListener('click', function() {
+            const searchQuery = document.getElementById('searchInput').value;
+            if (!searchQuery) {
+                alert('Masukkan kata kunci pencarian!');
+                return;
+            }
+
+            // Menggunakan API untuk mencari musik (misalnya API dari https://itunes.apple.com/search)
+            fetch(`https://itunes.apple.com/search?term=${searchQuery}&entity=song&limit=10`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultsContainer = document.getElementById('results');
+                    resultsContainer.innerHTML = ''; // Mengosongkan hasil sebelumnya
+
+                    data.results.forEach(song => {
+                        const resultItem = document.createElement('div');
+                        resultItem.classList.add('result-item');
+
+                        const thumbnail = song.artworkUrl100 ? song.artworkUrl100 : 'https://via.placeholder.com/200';
+                        resultItem.innerHTML = `
+                            <img src="${thumbnail}" alt="${song.trackName}">
+                            <h3>${song.trackName}</h3>
+                            <p>${song.artistName}</p>
+                        `;
+
+                        // Menambahkan event listener untuk memutar lagu
+                        resultItem.addEventListener('click', function() {
+                            playSong(song.previewUrl);
+                        });
+
+                        resultsContainer.appendChild(resultItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching music data:', error);
+                });
+        });
+
+        // Fungsi untuk memutar lagu
+        function playSong(url) {
+            const audioPlayer = document.getElementById('audioPlayer');
+            const audio = document.getElementById('audio');
+            const audioSource = document.getElementById('audioSource');
+
+            audioSource.src = url;
+            audio.load();  // Memuat sumber audio baru
+            audio.play();  // Memutar lagu
+            audioPlayer.style.display = 'block';  // Menampilkan player audio
+        }
+    </script>
+</body>
+</html>
